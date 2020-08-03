@@ -16,10 +16,12 @@ mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true
 //const items = ["Buy Food", "Cook Food", "Eat Food"];
 //const workItems = [];
 
+
+//required: [true, "Things want to do is missing, please check back"]
 const ItemSchema = new mongoose.Schema ({
   title: {
-    type: String,
-    required: [true, "Things want to do is missing, please check back"]
+    type: String
+
   }
 });
 
@@ -67,15 +69,14 @@ app.get("/", function(req, res) {
 
 app.post("/", function(req, res){
 
-  const item = req.body.newItem;
+  const itemName = req.body.newItem;
 
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  } else {
-    items.push(item);
-    res.redirect("/");
-  }
+  const item = new Item ({
+    name: itemName
+  });
+
+  item.save();
+
 });
 
 app.get("/work", function(req,res){
