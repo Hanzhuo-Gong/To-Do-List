@@ -16,12 +16,10 @@ mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true
 //const items = ["Buy Food", "Cook Food", "Eat Food"];
 //const workItems = [];
 
-
-//required: [true, "Things want to do is missing, please check back"]
 const ItemSchema = new mongoose.Schema ({
   title: {
-    type: String
-
+    type: String,
+    required: [true, "Things want to do is missing, please check back"]
   }
 });
 
@@ -72,11 +70,28 @@ app.post("/", function(req, res){
   const itemName = req.body.newItem;
 
   const item = new Item ({
-    name: itemName
+    title: itemName
   });
 
   item.save();
 
+  //after the item have been saved, redirect back to the / and render all items
+  res.redirect("/");
+
+});
+
+app.post("/delete", function(req, res) {
+  const checkedItemId = req.body.CheckBoxToDelete;
+
+  Item.findOneAndRemove({_id: checkedItemId}, function(err) {
+    if (err) {
+      console.log(err);
+    }
+    else {
+      console.log("Selected data have been remove");
+      res.redirect("/");
+    }
+  });
 });
 
 app.get("/work", function(req,res){
