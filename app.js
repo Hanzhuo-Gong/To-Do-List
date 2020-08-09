@@ -16,15 +16,23 @@ mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true
 //const items = ["Buy Food", "Cook Food", "Eat Food"];
 //const workItems = [];
 
-const ItemSchema = new mongoose.Schema ({
+const ItemsSchema = new mongoose.Schema ({
   title: {
     type: String,
     required: [true, "Things want to do is missing, please check back"]
   }
 });
 
+const listSchema = {
+  name:String,
+  items: [ItemsSchema]
+}
+
+
 //name, nameofSchema
-const Item = mongoose.model("Item", ItemSchema);
+const Item = mongoose.model("Item", ItemsSchema);
+
+const List = mongoose.model("List", listSchema);
 
 const breakFast = new Item ({
   title: "Eat Breakfast"
@@ -88,14 +96,44 @@ app.post("/delete", function(req, res) {
       console.log(err);
     }
     else {
-      console.log("Selected data have been remove");
+      console.log("Selected data has been remove");
       res.redirect("/");
     }
   });
 });
 
+app.get("/:customListName", function(req,res){
+  const customListName = req.params.customListName;
+
+  //check if the list already exist, don't add duplicate data to the databse
+  List.findOne({name: customListName}, function(err, foundList) {
+    if (!err) {
+      if(!foundList) {
+        //Create a new list
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+
+        list.save();
+
+        res.redirect("/" + customListName);
+      }
+      else {
+        //listTitle: customeListName also works
+        res.render("list", {listTitle: foundList.name, newListItems: foundList.items})
+      }
+    }
+    else {
+      console.log(foundList);
+    }
+  });
+  /*
+  */
+});
+
 app.get("/work", function(req,res){
-  res.render("list", {listTitle: "Work List", newListItems: workItems});
+  res.render("work");
 });
 
 app.get("/about", function(req, res){
