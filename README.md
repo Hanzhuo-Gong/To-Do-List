@@ -5,5 +5,5 @@ To-Do-List is a website allow user to add and delete to-do-list to their resposi
 Create a database named:
 todolistDB
 
-or change this line of code to the name thaty ou wish to have:
+or change this line of code to the name that you wish to have:
 mongoose.connect("mongodb://localhost:27017/todolistDB(change this name)"
