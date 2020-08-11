@@ -7,3 +7,5 @@ todolistDB
 
 or change this line of code to the name that you wish to have:
 mongoose.connect("mongodb://localhost:27017/todolistDB(change this name)"
+
+To-do-List allow users to create their own path besides about, work, home.. etc
