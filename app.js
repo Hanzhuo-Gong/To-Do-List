@@ -3,6 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const _ = require("lodash");
 
 
 const app = express();
@@ -76,34 +77,64 @@ app.get("/", function(req, res) {
 app.post("/", function(req, res){
 
   const itemName = req.body.newItem;
+  const listName = req.body.list;
 
   const item = new Item ({
     title: itemName
   });
 
-  item.save();
+  //if the listName is default
+  if (listName === "Today") {
+    item.save();
 
-  //after the item have been saved, redirect back to the / and render all items
-  res.redirect("/");
+    //after the item have been saved, redirect back to the / and render all items
+    res.redirect("/");
+  }
+  //listName come from custom
+  else {
+    List.findOne({name: listName}, function(err, foundList) {
+      foundList.items.push(item);
+      foundList.save();
+      res.redirect("/" + listName);
+    });
+  }
+
 
 });
 
 app.post("/delete", function(req, res) {
   const checkedItemId = req.body.CheckBoxToDelete;
+  const listName = req.body.listName;
 
-  Item.findOneAndRemove({_id: checkedItemId}, function(err) {
-    if (err) {
-      console.log(err);
-    }
-    else {
-      console.log("Selected data has been remove");
-      res.redirect("/");
-    }
-  });
+  //delete from default page
+  if(listName === "Today") {
+    Item.findOneAndRemove({_id: checkedItemId}, function(err) {
+      if (err) {
+        console.log(err);
+      }
+      else {
+        console.log("Selected data has been remove");
+        res.redirect("/");
+      }
+    });
+  }
+  //delete from custom page
+  else {
+    List.findOneAndUpdate({name: listName},{$pull: {items: {_id:checkedItemId}}},function(err, foundList){
+      if (!err) {
+        res.redirect("/" + listName);
+      }
+      else {
+        console.log("Failed to delete the item");
+      }
+    });
+  }
+
+
 });
 
 app.get("/:customListName", function(req,res){
-  const customListName = req.params.customListName;
+  const customListName = _.capitalize(req.params.customListName);
 
   //check if the list already exist, don't add duplicate data to the databse
   List.findOne({name: customListName}, function(err, foundList) {
@@ -128,8 +159,6 @@ app.get("/:customListName", function(req,res){
       console.log(foundList);
     }
   });
-  /*
-  */
 });
 
 app.get("/work", function(req,res){
